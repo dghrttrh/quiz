@@ -17,6 +17,7 @@ import com.example.quiz13.vo.FillinReq;
 import com.example.quiz13.vo.GetQuestionRes;
 import com.example.quiz13.vo.SearcgReq;
 import com.example.quiz13.vo.SearchRes;
+import com.example.quiz13.vo.StatisticsRes;
 import com.example.quiz13.vo.UpdateReq;
 
 import jakarta.validation.Valid;
@@ -67,6 +68,11 @@ public class QuizServiceController {
 	@PostMapping(value = "quiz/fillin")
 	public BasicRes fillin(FillinReq req) {
 		return feedbackService.fillin(req);
+	}
+	
+	@PostMapping(value = "quiz/statistics")
+	public StatisticsRes statistics(int quizId) {
+		return feedbackService.statistics(quizId);
 	}
 
 }
