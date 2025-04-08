@@ -8,10 +8,12 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.quiz13.service.ifs.FeedbackService;
 import com.example.quiz13.service.ifs.QuizService;
 import com.example.quiz13.vo.BasicRes;
 import com.example.quiz13.vo.CreateReq;
 import com.example.quiz13.vo.DeleteReq;
+import com.example.quiz13.vo.FillinReq;
 import com.example.quiz13.vo.GetQuestionRes;
 import com.example.quiz13.vo.SearcgReq;
 import com.example.quiz13.vo.SearchRes;
@@ -25,6 +27,9 @@ public class QuizServiceController {
 
 	@Autowired
 	private QuizService quizService;
+	
+	@Autowired
+	private FeedbackService feedbackService;
 
 	@PostMapping(value = "quiz/create")
 	public BasicRes create(@Valid @RequestBody CreateReq req) {
@@ -57,6 +62,11 @@ public class QuizServiceController {
 	@PostMapping(value = "quiz/delete")
 	public BasicRes delete(@Valid @RequestBody DeleteReq req) {
 		return quizService.delete(req);
+	}
+	
+	@PostMapping(value = "quiz/fillin")
+	public BasicRes fillin(FillinReq req) {
+		return feedbackService.fillin(req);
 	}
 
 }
