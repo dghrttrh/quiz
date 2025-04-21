@@ -4,6 +4,8 @@ import java.time.LocalDate;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -35,6 +37,10 @@ public class QuizServiceImpl implements QuizService {
 	@Autowired
 	private QuestionDao questionDao;
 
+	// 清除暫存資料: 只有 cacheNames 沒有 key，會把 cacheNames 是 quiz_search 的所有暫存資料清除
+	// 如果是 cacheNames + key，則是只清除特定的暫存資料； key 的參數值一樣使用 #p0 來表示，但通常不會只清除特定資料
+	// allEntries: 強制刪除指定的 cacheNames 底下所有 key 對應的暫存資料，預設是 false
+	@CacheEvict(cacheNames = "get_search", allEntries = true)
 	// @Transactional 只有錯誤發生在 RuntimeException(或其他子類別)時才會將資料回朔
 	// rollbackOn(jakarta庫) = Exception.class 是將資料回朔指定到只要發生 Exception 時，就會將資料回朔
 	// 因為 Exception 是所有 XXXException 的父類別，只要是發生 XXXException 時，資料回朔都會有效
@@ -172,7 +178,7 @@ public class QuizServiceImpl implements QuizService {
 		int quizId = req.getId();
 		// 檢查 Question 中的 quizId 是否與 Quiz 的 id 值一樣
 		for (Question item : req.getQuestionList()) {
-			if (item.getQuesId() != quizId) {
+			if (item.getQuizId() != quizId) {
 				return new BasicRes(ResMessage.QUIZ_ID_MISMATCH.getCode(), //
 						ResMessage.QUIZ_ID_MISMATCH.getMessage());
 			}
@@ -202,33 +208,30 @@ public class QuizServiceImpl implements QuizService {
 				ResMessage.SUCCESS.getMessage());
 	}
 
+	/**
+	 * 1. cacheNames 可以當成是書本目錄的"章"，key 可以當成是書本目錄的"節"<br>
+	 * 2. cacheNames 等號後面的字串名稱自定義，可以多個，多個時要使用大括號{}，例如: cacheNames = {"A", "B"}<br>
+	 * 3. key 等號後面的字串，因為 req 是物件，使用 #req 會取不到參數值，
+	 *     簡單點的方法是使用位置 #p0 來表示方法中第一個參數<br>
+	 * 4. Cache 不支援 concat("字串1", "字串2", "字串3") 這種寫法<br>
+	 *    4.1 多參數的串接，不使用 concat，直接在字串中使用加號(+)串多個參數，字串中使用單引號來表示字串<br>
+	 *    4.2 concat 中非字串參數值要使用方法 toString() 轉成字串<br>
+	 * 5. unless 可以翻成排除的意思，後面的字串是指會排除符合條件的 --> 排除 res 不成功，即只暫存成功時的資料<br>
+	 * 6. #result: 表示方法返回的結果；即使是不同方法有不同的返回資料型態，也通用<br>
+	 */
+	@Cacheable(cacheNames = "get_search", //
+			key = "#p0.quizName + '-' + #p0.startDate.toString() + '-' + #p0.endDate.toString()",//
+			unless="#result.code != 200")
 	@Override
 	public SearchRes getAll(SearcgReq req) {
-		String quizName = req.getQuizName();
-		LocalDate startDate = req.getStartDate();
-		LocalDate endDate = req.getEndDate();
-		// 轉換值
-		if (!StringUtils.hasText(quizName)) {
-			// 將 quizName = null 或是 quizName = 全空白字串時，轉換成空字串
-			quizName = "";
-		}
-		//startDate 沒有帶值表示不是條件之一，但因為 SQL 的語法，可以把 startDate 替換成很早的時間
-		if (startDate == null) {
-			startDate = LocalDate.of(1970, 1, 1);
-		}
-		// endDate 沒有帶值表示不是條件之一，但因為 SQL 的語法，可以把 endDate 替換成很晚的時間
-		if (endDate == null) {
-			endDate = LocalDate.of(2999, 12, 31);
-		}
-		List<Quiz> list = quizDao.getAll(quizName, startDate, endDate);
-		
+		List<Quiz> list = quizDao.getAll(req.getQuizName(), req.getStartDate(), req.getEndDate());
+
 		return new SearchRes(//
 				ResMessage.SUCCESS.getCode(), //
-				ResMessage.SUCCESS.getMessage(),//
+				ResMessage.SUCCESS.getMessage(), //
 				list);
 	}
 
-	
 	@Transactional(rollbackOn = Exception.class)
 	@Override
 	public BasicRes delete(DeleteReq req) {

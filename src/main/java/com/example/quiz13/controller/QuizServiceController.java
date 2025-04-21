@@ -8,18 +8,16 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.example.quiz13.service.ifs.FeedbackService;
 import com.example.quiz13.service.ifs.QuizService;
 import com.example.quiz13.vo.BasicRes;
 import com.example.quiz13.vo.CreateReq;
 import com.example.quiz13.vo.DeleteReq;
-import com.example.quiz13.vo.FillinReq;
 import com.example.quiz13.vo.GetQuestionRes;
 import com.example.quiz13.vo.SearcgReq;
 import com.example.quiz13.vo.SearchRes;
-import com.example.quiz13.vo.StatisticsRes;
 import com.example.quiz13.vo.UpdateReq;
 
+import io.swagger.v3.oas.annotations.Hidden;
 import jakarta.validation.Valid;
 
 @CrossOrigin
@@ -29,8 +27,8 @@ public class QuizServiceController {
 	@Autowired
 	private QuizService quizService;
 	
-	@Autowired
-	private FeedbackService feedbackService;
+//	@Autowired
+//	private FeedbackService feedbackService;
 
 	@PostMapping(value = "quiz/create")
 	public BasicRes create(@Valid @RequestBody CreateReq req) {
@@ -43,7 +41,8 @@ public class QuizServiceController {
 	}
 
 	@PostMapping(value = "quiz/get_search")
-	public SearchRes getAll(SearcgReq req) {
+	public SearchRes getAll(@RequestBody SearcgReq req) {
+		req.init();
 		return quizService.getAll(req);
 	}
 
@@ -60,19 +59,12 @@ public class QuizServiceController {
 		return quizService.update(req);
 	}
 
+	@Hidden
 	@PostMapping(value = "quiz/delete")
 	public BasicRes delete(@Valid @RequestBody DeleteReq req) {
 		return quizService.delete(req);
 	}
 	
-	@PostMapping(value = "quiz/fillin")
-	public BasicRes fillin(FillinReq req) {
-		return feedbackService.fillin(req);
-	}
 	
-	@PostMapping(value = "quiz/statistics")
-	public StatisticsRes statistics(int quizId) {
-		return feedbackService.statistics(quizId);
-	}
 
 }

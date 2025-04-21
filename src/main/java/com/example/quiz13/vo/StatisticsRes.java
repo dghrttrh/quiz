@@ -8,12 +8,10 @@ public class StatisticsRes extends BasicRes {
 
 	public StatisticsRes() {
 		super();
-		// TODO Auto-generated constructor stub
 	}
 
 	public StatisticsRes(int code, String message) {
 		super(code, message);
-		// TODO Auto-generated constructor stub
 	}
 
 	public StatisticsRes(int code, String message, List<StatisticsVo> statisticsVoList) {

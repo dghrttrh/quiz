@@ -159,7 +159,7 @@ public class FeedbackServiceImpl implements FeedbackService{
 				return false;
 			}
 		}
-		return false;
+		return true;
 	}
 
 	@Override

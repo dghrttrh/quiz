@@ -1,6 +1,7 @@
 package com.example.quiz13;
 
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -40,6 +41,11 @@ class Quiz13ApplicationTests {
 		CreateReq req = new CreateReq("A03","B",date,endDate,true,list);
 		BasicRes res = quiz.create(req);
 		System.out.println(res.getCode() + res.getMessage());
+	}
+	
+	@Test
+	public void test() {
+		
 	}
 	
 }
